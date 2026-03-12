@@ -10,8 +10,6 @@ import '../../features/auth/auth.dart';
 import '../../features/cart/cart.dart';
 import '../../features/orders/orders.dart';
 import '../../features/shop/shop.dart';
-import '../../features/driver/driver.dart';
-import '../../features/admin/admin.dart';
 import '../../features/notifications/notifications.dart';
 import '../../features/payment/payment.dart';
 
@@ -43,7 +41,7 @@ Future<void> _initCore() async {
 
   // Storage
   sl.registerLazySingleton<SecureStorageService>(
-    () => SecureStorageService(),
+    SecureStorageService.new,
   );
 
   // Network - DioClient (existing implementation)
@@ -180,59 +178,59 @@ void _initDriver() {
   // ─────────────────────────────────────────────────────────────────
   // Use Cases (Singleton)
   // ─────────────────────────────────────────────────────────────────
-  sl.registerLazySingleton(() => GetAvailableDeliveriesUseCase(sl()));
-  sl.registerLazySingleton(() => AcceptDeliveryUseCase(sl()));
-  sl.registerLazySingleton(() => GetDriverStatsUseCase(sl()));
+  // sl.registerLazySingleton(() => GetAvailableDeliveriesUseCase(sl()));
+  // sl.registerLazySingleton(() => AcceptDeliveryUseCase(sl()));
+  // sl.registerLazySingleton(() => GetDriverStatsUseCase(sl()));
 
   // ─────────────────────────────────────────────────────────────────
   // Repository (Singleton, registered with interface type)
   // ─────────────────────────────────────────────────────────────────
-  sl.registerLazySingleton<DeliveryRepository>(
-    () => DeliveryRepositoryImpl(sl()),
-  );
+  // sl.registerLazySingleton<DeliveryRepository>(
+  //   () => DeliveryRepositoryImpl(sl()),
+  // );
 
   // ─────────────────────────────────────────────────────────────────
   // Data Sources (Singleton, registered with interface type)
   // ─────────────────────────────────────────────────────────────────
-  sl.registerLazySingleton<DeliveryRemoteDataSource>(
-    () => DeliveryRemoteDataSourceImpl(sl()),
-  );
+  // sl.registerLazySingleton<DeliveryRemoteDataSource>(
+  //   () => DeliveryRemoteDataSourceImpl(sl()),
+  // );
 
   // ─────────────────────────────────────────────────────────────────
   // BLoC (Factory)
   // ─────────────────────────────────────────────────────────────────
-  sl.registerFactory<DriverBloc>(
-    () => DriverBloc(sl()),
-  );
+  // sl.registerFactory<DriverBloc>(
+  // () => DriverBloc(sl()),
+  // );
 }
 
 void _initAdmin() {
   // ─────────────────────────────────────────────────────────────────
   // Use Cases (Singleton)
   // ─────────────────────────────────────────────────────────────────
-  sl.registerLazySingleton(() => GetStatsUseCase(sl()));
-  sl.registerLazySingleton(() => GetUsersUseCase(sl()));
+  // sl.registerLazySingleton(() => GetStatsUseCase(sl()));
+  // sl.registerLazySingleton(() => GetUsersUseCase(sl()));
 
   // ─────────────────────────────────────────────────────────────────
   // Repository (Singleton, registered with interface type)
   // ─────────────────────────────────────────────────────────────────
-  sl.registerLazySingleton<AdminRepository>(
-    () => AdminRepositoryImpl(sl()),
-  );
+  // sl.registerLazySingleton<AdminRepository>(
+  //   () => AdminRepositoryImpl(sl()),
+  // );
 
   // ─────────────────────────────────────────────────────────────────
   // Data Sources (Singleton, registered with interface type)
   // ─────────────────────────────────────────────────────────────────
-  sl.registerLazySingleton<AdminRemoteDataSource>(
-    () => AdminRemoteDataSource(sl()),
-  );
+  // sl.registerLazySingleton<AdminRemoteDataSource>(
+  //   () => AdminRemoteDataSource(sl()),
+  // );
 
   // ─────────────────────────────────────────────────────────────────
   // BLoC (Factory)
   // ─────────────────────────────────────────────────────────────────
-  sl.registerFactory<AdminBloc>(
-    () => AdminBloc(sl()),
-  );
+  // sl.registerFactory<AdminBloc>(
+  //   () => AdminBloc(sl()),
+  // );
 }
 
 void _initNotifications() {

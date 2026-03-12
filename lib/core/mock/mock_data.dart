@@ -11,7 +11,6 @@ import '../../features/orders/data/models/order_item_model.dart';
 import '../../features/orders/domain/entities/order.dart';
 import '../../features/payment/data/models/payment_proof_model.dart';
 import '../../features/notifications/data/models/notification_model.dart';
-import '../../features/driver/data/models/delivery_model.dart';
 
 /// Mock data repository providing sample data for all features.
 class MockData {
@@ -420,107 +419,6 @@ class MockData {
   // ============================================
   // DELIVERY MOCK DATA
   // ============================================
-
-  static final List<DeliveryModel> deliveries = [
-    DeliveryModel(
-      id: 'delivery-1',
-      orderId: 'order-2',
-      orderNumber: 'ORD-002',
-      shopId: 'shop-2',
-      shopName: 'Kimironko Market',
-      driverId: 'user-3',
-      driverName: 'Eric Mugisha',
-      pickupAddress: 'Kimironko Market, Gasabo',
-      pickupLatitude: -1.9442,
-      pickupLongitude: 30.1267,
-      pickupPhone: '+250788234567',
-      deliveryAddress: 'KN 3 Rd, Kigali',
-      deliveryLatitude: -1.9442,
-      deliveryLongitude: 30.1267,
-      deliveryPhone: '+250788123456',
-      estimatedDistanceKm: 3.5,
-      deliveryFee: 2000,
-      status: 'in_transit',
-      acceptedAt: DateTime.now().subtract(const Duration(hours: 1)),
-      pickedUpAt: DateTime.now().subtract(const Duration(minutes: 30)),
-      driverConfirmedPickup: true,
-      createdAt: DateTime.now().subtract(const Duration(hours: 2)),
-    ),
-    DeliveryModel(
-      id: 'delivery-2',
-      orderId: 'order-3',
-      orderNumber: 'ORD-003',
-      shopId: 'shop-1',
-      shopName: 'Marché Central',
-      driverId: 'user-3',
-      driverName: 'Eric Mugisha',
-      pickupAddress: 'Marché Central, KG 11 Ave',
-      pickupLatitude: -1.9536,
-      pickupLongitude: 30.0906,
-      pickupPhone: '+250788234567',
-      deliveryAddress: 'KG 15 Ave, Kigali',
-      deliveryLatitude: -1.9536,
-      deliveryLongitude: 30.0906,
-      deliveryPhone: '+250788123456',
-      estimatedDistanceKm: 2,
-      deliveryFee: 1500,
-      status: 'completed',
-      acceptedAt: DateTime.now().subtract(const Duration(days: 4, hours: -1)),
-      pickedUpAt: DateTime.now().subtract(const Duration(days: 4, hours: -2)),
-      completedAt: DateTime.now().subtract(const Duration(days: 4, hours: -3)),
-      driverConfirmedPickup: true,
-      driverConfirmedDelivery: true,
-      customerConfirmedDelivery: true,
-      createdAt: DateTime.now().subtract(const Duration(days: 4)),
-    ),
-  ];
-
-  static final List<AvailableDeliveryModel> availableDeliveries = [
-    AvailableDeliveryModel(
-      id: 'delivery-3',
-      orderId: 'order-1',
-      shopName: 'Marché Central',
-      shopAddress: 'KG 11 Ave, Gasabo',
-      pickupLatitude: -1.9536,
-      pickupLongitude: 30.0906,
-      deliveryLatitude: -1.9536,
-      deliveryLongitude: 30.0906,
-      estimatedDistanceKm: 2.5,
-      deliveryFee: 1800,
-      createdAt: DateTime.now().subtract(const Duration(minutes: 15)),
-      expiresAt: DateTime.now().add(const Duration(minutes: 45)),
-    ),
-    AvailableDeliveryModel(
-      id: 'delivery-4',
-      orderId: 'order-4',
-      shopName: 'Kimironko Market',
-      shopAddress: 'Kimironko Road',
-      pickupLatitude: -1.9442,
-      pickupLongitude: 30.1267,
-      deliveryLatitude: -1.9400,
-      deliveryLongitude: 30.1300,
-      estimatedDistanceKm: 4,
-      deliveryFee: 2500,
-      createdAt: DateTime.now().subtract(const Duration(minutes: 5)),
-      expiresAt: DateTime.now().add(const Duration(minutes: 55)),
-    ),
-  ];
-
-  static DeliveryModel? getDeliveryById(String id) {
-    try {
-      return deliveries.firstWhere((delivery) => delivery.id == id);
-    } catch (e) {
-      return null;
-    }
-  }
-
-  static AvailableDeliveryModel? getAvailableDeliveryById(String id) {
-    try {
-      return availableDeliveries.firstWhere((delivery) => delivery.id == id);
-    } catch (e) {
-      return null;
-    }
-  }
 
   // ============================================
   // ADMIN STATS MOCK DATA

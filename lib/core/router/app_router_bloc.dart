@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/auth/presentation/bloc/auth_bloc.dart';
-import '../../features/admin/presentation/pages/owner_dashboard_screen.dart';
+
 import '../../features/auth/presentation/pages/forgot_password_screen.dart';
 import '../../features/auth/presentation/pages/login_screen.dart';
 import '../../features/auth/presentation/pages/onboarding_screen.dart';
@@ -122,9 +122,6 @@ GoRouter createAppRouterWithBloc(BuildContext context) {
           GoRoute(
               path: '/profile',
               builder: (context, state) => const ProfileScreen()),
-          GoRoute(
-              path: '/dashboard',
-              builder: (context, state) => const OwnerDashboardScreen()),
           GoRoute(
               path: '/driver-deliveries',
               builder: (context, state) => const DriverDeliveriesScreen()),

@@ -6,10 +6,8 @@ import 'core/constants/app_constants.dart';
 import 'core/di/injection_container.dart' as di;
 import 'core/router/app_router_bloc.dart';
 import 'core/theme/app_theme.dart';
-import 'features/admin/admin.dart';
 import 'features/auth/auth.dart';
 import 'features/cart/cart.dart';
-import 'features/driver/driver.dart';
 import 'features/notifications/notifications.dart';
 import 'features/orders/orders.dart';
 import 'features/payment/payment.dart';
@@ -25,14 +23,11 @@ class GuraNowApp extends StatelessWidget {
         providers: [
           BlocProvider(
             create: (_) {
-              final bloc = di.sl<AuthBloc>();
-              bloc.add(const AuthCheckRequested());
+              final bloc = di.sl<AuthBloc>()..add(const AuthCheckRequested());
               return bloc;
             },
           ),
-          BlocProvider(create: (_) => di.sl<AdminBloc>()),
           BlocProvider(create: (_) => di.sl<CartBloc>()),
-          BlocProvider(create: (_) => di.sl<DriverBloc>()),
           BlocProvider(create: (_) => di.sl<NotificationBloc>()),
           BlocProvider(create: (_) => di.sl<OrderBloc>()),
           BlocProvider(create: (_) => di.sl<PaymentBloc>()),
