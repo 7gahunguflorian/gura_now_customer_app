@@ -2,6 +2,7 @@ part of 'shop_bloc.dart';
 
 enum ShopListStatus { initial, loading, success, failure }
 enum ShopDetailStatus { initial, loading, success, failure }
+enum ShopProductsStatus { initial, loading, success, failure }
 
 class ShopState extends Equatable {
   const ShopState({
@@ -12,6 +13,9 @@ class ShopState extends Equatable {
     this.selectedShop,
     this.detailError,
     this.categoryFilter,
+    this.productsStatus = ShopProductsStatus.initial,
+    this.shopProducts = const [],
+    this.productsError,
   });
 
   final ShopListStatus listStatus;
@@ -21,6 +25,9 @@ class ShopState extends Equatable {
   final Shop? selectedShop;
   final String? detailError;
   final String? categoryFilter;
+  final ShopProductsStatus productsStatus;
+  final List<Product> shopProducts;
+  final String? productsError;
 
   List<Shop> get filteredShops {
     if (categoryFilter == null || categoryFilter!.isEmpty) return shops;
@@ -36,6 +43,9 @@ class ShopState extends Equatable {
         selectedShop,
         detailError,
         categoryFilter,
+        productsStatus,
+        shopProducts,
+        productsError,
       ];
 
   ShopState copyWith({
@@ -46,6 +56,9 @@ class ShopState extends Equatable {
     Shop? selectedShop,
     String? detailError,
     String? categoryFilter,
+    ShopProductsStatus? productsStatus,
+    List<Product>? shopProducts,
+    String? productsError,
   }) {
     return ShopState(
       listStatus: listStatus ?? this.listStatus,
@@ -55,6 +68,9 @@ class ShopState extends Equatable {
       selectedShop: selectedShop ?? this.selectedShop,
       detailError: detailError,
       categoryFilter: categoryFilter ?? this.categoryFilter,
+      productsStatus: productsStatus ?? this.productsStatus,
+      shopProducts: shopProducts ?? this.shopProducts,
+      productsError: productsError,
     );
   }
 }

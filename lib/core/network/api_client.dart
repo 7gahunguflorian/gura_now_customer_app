@@ -10,7 +10,6 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../config/api_config.dart';
 import '../errors/exceptions.dart' as core_exceptions;
@@ -289,9 +288,3 @@ class ApiClient {
     }
   }
 }
-
-/// Riverpod provider for [ApiClient] (Dio-based).
-final apiClientProvider = Provider<ApiClient>((ref) {
-  final dioClient = ref.watch(dioClientProvider);
-  return ApiClient(dioClient);
-});

@@ -3,8 +3,10 @@
 // Domain
 export 'domain/entities/notification.dart';
 export 'domain/repositories/notification_repository.dart';
+export 'domain/usecases/delete_notification_usecase.dart';
 export 'domain/usecases/get_notifications_usecase.dart';
 export 'domain/usecases/get_unread_count_usecase.dart';
+export 'domain/usecases/mark_all_read_usecase.dart';
 export 'domain/usecases/mark_as_read_usecase.dart';
 
 // Data

@@ -336,7 +336,6 @@ class _InputField extends StatelessWidget {
     required this.prefixIcon,
     this.suffixIcon,
     this.obscureText = false,
-    this.keyboardType,
     this.validator,
   });
 
@@ -346,7 +345,6 @@ class _InputField extends StatelessWidget {
   final IconData prefixIcon;
   final Widget? suffixIcon;
   final bool obscureText;
-  final TextInputType? keyboardType;
   final String? Function(String?)? validator;
 
   @override
@@ -365,7 +363,6 @@ class _InputField extends StatelessWidget {
         TextFormField(
           controller: controller,
           obscureText: obscureText,
-          keyboardType: keyboardType,
           validator: validator,
           style: AppTextStyles.bodyMedium.copyWith(
             color: AppColors.textPrimary,

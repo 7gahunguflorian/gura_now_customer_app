@@ -26,3 +26,10 @@ class ShopCategoryFilterChanged extends ShopEvent {
   @override
   List<Object?> get props => [category];
 }
+
+class ShopProductsRequested extends ShopEvent {
+  const ShopProductsRequested(this.shopId);
+  final String shopId;
+  @override
+  List<Object?> get props => [shopId];
+}

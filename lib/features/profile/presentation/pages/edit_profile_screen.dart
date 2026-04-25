@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/widgets.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../bloc/profile_bloc.dart';
 
 /// Screen for editing user profile in dark mode.
 class EditProfileScreen extends StatefulWidget {
@@ -23,7 +24,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   late TextEditingController _emailController;
   late TextEditingController _bioController;
   XFile? _selectedImage;
-  bool _isSaving = false;
   bool _controllersInitialized = false;
 
   @override
@@ -70,51 +70,47 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   Future<void> _saveProfile() async {
     if (!_formKey.currentState!.validate()) return;
-
-    setState(() => _isSaving = true);
-
-    try {
-      // TODO: Implement actual profile update API call
-      await Future.delayed(const Duration(seconds: 1));
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Profil mis à jour'),
-            backgroundColor: AppColors.success,
-          ),
-        );
-        context.pop();
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Erreur: $e'),
-            backgroundColor: AppColors.danger,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isSaving = false);
-      }
-    }
+    context.read<ProfileBloc>().add(ProfileUpdateRequested(
+      fullName: _nameController.text.trim(),
+      email: _emailController.text.trim().isEmpty
+          ? null
+          : _emailController.text.trim(),
+      bio: _bioController.text.trim().isEmpty
+          ? null
+          : _bioController.text.trim(),
+    ));
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<AuthBloc, AuthState>(
-      builder: (context, state) {
-        final user = state.user;
-        return Scaffold(
+    return BlocListener<ProfileBloc, ProfileState>(
+      listenWhen: (prev, curr) => prev.actionStatus != curr.actionStatus,
+      listener: (context, state) {
+        if (state.actionStatus == ProfileActionStatus.success) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+              content: Text('Profil mis à jour'),
+              backgroundColor: AppColors.success));
+          context.pop();
+        } else if (state.actionStatus == ProfileActionStatus.failure) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text(state.error ?? 'Erreur'),
+              backgroundColor: AppColors.danger));
+        }
+      },
+      child: BlocBuilder<AuthBloc, AuthState>(
+        builder: (context, state) {
+          final user = state.user;
+          final isSaving =
+              context.watch<ProfileBloc>().state.actionStatus ==
+                  ProfileActionStatus.loading;
+          return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('Modifier le profil'),
         actions: [
           TextButton(
-            onPressed: _isSaving ? null : _saveProfile,
-            child: _isSaving
+            onPressed: isSaving ? null : _saveProfile,
+            child: isSaving
                 ? const SizedBox(
                     width: 20,
                     height: 20,
@@ -323,8 +319,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           ),
         ),
       ),
-    );
-      },
+          );
+        },
+      ),
     );
   }
 }

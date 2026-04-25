@@ -9,6 +9,7 @@ import '../../../../core/widgets/widgets.dart';
 import '../../../cart/presentation/bloc/cart_bloc.dart';
 import '../../../review/presentation/widgets/star_rating_widget.dart';
 import '../../../shop/domain/entities/product.dart';
+import '../bloc/product_detail_bloc.dart';
 
 /// Product detail screen with variant selection and add to cart.
 class ProductDetailScreen extends StatefulWidget {
@@ -34,9 +35,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
 
-  // Mock product data - replace with actual provider
-  late Product _product;
-
   @override
   void initState() {
     super.initState();
@@ -50,39 +48,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
     );
     _animationController.forward();
 
-    // Initialize mock product
-    _product = Product(
-      id: widget.productId,
-      name: 'T-Shirt Premium',
-      description:
-          'T-shirt de haute qualité en coton bio. Parfait pour un look décontracté mais élégant. Disponible en plusieurs couleurs et tailles.',
-      price: 25000,
-      originalPrice: 30000,
-      currency: 'BIF',
-      images: const [
-        'https://via.placeholder.com/400x400/1A1A1A/00D9FF?text=Product+1',
-        'https://via.placeholder.com/400x400/252525/00D9FF?text=Product+2',
-        'https://via.placeholder.com/400x400/2A2A2A/00D9FF?text=Product+3',
-      ],
-      shopId: 'shop123',
-      shopName: 'Fashion Store',
-      rating: 4.5,
-      reviewCount: 24,
-      stock: 15,
-      isActive: true,
-      variants: const [
-        ProductVariant(type: 'Taille', options: ['S', 'M', 'L', 'XL']),
-        ProductVariant(
-            type: 'Couleur', options: ['Noir', 'Blanc', 'Bleu', 'Rouge']),
-      ],
-    );
-
-    // Initialize with first options
-    for (final variant in _product.variants) {
-      if (variant.options.isNotEmpty) {
-        _selectedVariants[variant.type] = variant.options.first;
-      }
-    }
+    context
+        .read<ProductDetailBloc>()
+        .add(LoadProductDetail(widget.productId));
   }
 
   @override
@@ -91,12 +59,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
     super.dispose();
   }
 
-  void _addToCart() async {
+  void _addToCart(Product product) async {
     setState(() => _isAddingToCart = true);
 
     try {
       context.read<CartBloc>().add(CartItemAdded(
-            _product,
+            product,
             quantity: _quantity,
           ));
 
@@ -122,14 +90,59 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
 
   @override
   Widget build(BuildContext context) {
+    return BlocBuilder<ProductDetailBloc, ProductDetailState>(
+      builder: (context, productState) {
+        if (productState.status == ProductDetailStatus.loading ||
+            productState.status == ProductDetailStatus.initial) {
+          return Scaffold(
+            backgroundColor: AppColors.background,
+            appBar: AppBar(
+              backgroundColor: AppColors.background,
+              foregroundColor: AppColors.textPrimary,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back_rounded),
+                onPressed: () => context.pop(),
+              ),
+            ),
+            body: const Center(
+                child: CircularProgressIndicator(color: AppColors.primary)),
+          );
+        }
+        if (productState.status == ProductDetailStatus.failure) {
+          return Scaffold(
+            backgroundColor: AppColors.background,
+            appBar: AppBar(
+              backgroundColor: AppColors.background,
+              foregroundColor: AppColors.textPrimary,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back_rounded),
+                onPressed: () => context.pop(),
+              ),
+            ),
+            body: Center(
+              child: Text(
+                productState.error ?? 'Erreur de chargement',
+                style: AppTextStyles.bodyMedium
+                    .copyWith(color: AppColors.textSecondary),
+              ),
+            ),
+          );
+        }
+        final product = productState.product!;
+        return _buildContent(context, product);
+      },
+    );
+  }
+
+  Widget _buildContent(BuildContext context, Product product) {
     final currencyFormat = NumberFormat.currency(
       locale: 'fr_BI',
       symbol: '',
       decimalDigits: 0,
     );
-    final images = _product.images.isNotEmpty
-        ? _product.images
-        : [_product.imageUrl ?? ''];
+    final images = product.images.isNotEmpty
+        ? product.images
+        : [product.imageUrl ?? ''];
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -233,7 +246,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                   children: [
                     // Shop info
                     InkWell(
-                      onTap: () => context.push('/shop/${_product.shopId}'),
+                      onTap: () => context.push('/shop/${product.shopId}'),
                       child: Row(
                         children: [
                           Container(
@@ -251,7 +264,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            _product.shopName ?? 'Boutique',
+                            product.shopName ?? 'Boutique',
                             style: const TextStyle(
                               fontWeight: FontWeight.w500,
                               color: AppColors.accent,
@@ -269,7 +282,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
 
                     // Product Name
                     Text(
-                      _product.name,
+                      product.name,
                       style: const TextStyle(
                         fontSize: 26,
                         fontWeight: FontWeight.bold,
@@ -282,8 +295,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                     Row(
                       children: [
                         StarRatingDisplay(
-                          rating: _product.rating,
-                          reviewCount: _product.reviewCount,
+                          rating: product.rating,
+                          reviewCount: product.reviewCount,
                         ),
                         const Spacer(),
                         Container(
@@ -292,17 +305,17 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: _product.stock > 0
+                            color: product.stock > 0
                                 ? AppColors.success.withValues(alpha: 0.15)
                                 : AppColors.danger.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
-                            _product.stock > 0
-                                ? 'En stock: ${_product.stock}'
+                            product.stock > 0
+                                ? 'En stock: ${product.stock}'
                                 : 'Rupture',
                             style: TextStyle(
-                              color: _product.stock > 0
+                              color: product.stock > 0
                                   ? AppColors.success
                                   : AppColors.danger,
                               fontSize: 12,
@@ -319,16 +332,16 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Text(
-                          '${currencyFormat.format(_product.price)} BIF',
+                          '${currencyFormat.format(product.price)} BIF',
                           style: AppTextStyles.price.copyWith(
                             fontSize: 28,
                             color: AppColors.primary,
                           ),
                         ),
-                        if (_product.hasDiscount) ...[
+                        if (product.hasDiscount) ...[
                           const SizedBox(width: 12),
                           Text(
-                            '${currencyFormat.format(_product.originalPrice)} BIF',
+                            '${currencyFormat.format(product.originalPrice)} BIF',
                             style: TextStyle(
                               fontSize: 16,
                               decoration: TextDecoration.lineThrough,
@@ -347,7 +360,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
-                              '-${_product.discountPercentage}%',
+                              '-${product.discountPercentage}%',
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 12,
@@ -361,8 +374,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                     const SizedBox(height: 28),
 
                     // Variants
-                    if (_product.variants.isNotEmpty) ...[
-                      ..._product.variants.map((variant) => Column(
+                    if (product.variants.isNotEmpty) ...[
+                      ...product.variants.map((variant) => Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
@@ -467,7 +480,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                               IconButton(
                                 icon: const Icon(Icons.add,
                                     color: AppColors.accent),
-                                onPressed: _quantity < _product.stock
+                                onPressed: _quantity < product.stock
                                     ? () => setState(() => _quantity++)
                                     : null,
                               ),
@@ -486,7 +499,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                     const SizedBox(height: 10),
                     LayoutBuilder(
                       builder: (context, constraints) {
-                        final description = _product.description ?? '';
+                        final description = product.description ?? '';
                         const maxLinesCollapsed = 3;
                         final needExpand = description.length > 120 || description.split('\n').length > maxLinesCollapsed;
                         final showFull = _descriptionExpanded || !needExpand;
@@ -558,7 +571,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '${currencyFormat.format(_product.price * _quantity)} BIF',
+                      '${currencyFormat.format(product.price * _quantity)} BIF',
                       style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
@@ -576,7 +589,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                   text: 'Ajouter au panier',
                   backgroundColor: AppColors.primary,
                   isLoading: _isAddingToCart,
-                  onPressed: _isAddingToCart ? null : _addToCart,
+                  onPressed: _isAddingToCart ? null : () => _addToCart(product),
                   icon: Icons.shopping_cart_rounded,
                 ),
               ),

@@ -11,6 +11,9 @@ import 'features/cart/cart.dart';
 import 'features/notifications/notifications.dart';
 import 'features/orders/orders.dart';
 import 'features/payment/payment.dart';
+import 'features/product/product.dart';
+import 'features/profile/profile.dart';
+import 'features/review/review.dart';
 import 'features/shop/shop.dart';
 
 /// Root application widget.
@@ -31,6 +34,9 @@ class GuraNowApp extends StatelessWidget {
           BlocProvider(create: (_) => di.sl<NotificationBloc>()),
           BlocProvider(create: (_) => di.sl<OrderBloc>()),
           BlocProvider(create: (_) => di.sl<PaymentBloc>()),
+          BlocProvider(create: (_) => di.sl<ProductDetailBloc>()),
+          BlocProvider(create: (_) => di.sl<ProfileBloc>()),
+          BlocProvider(create: (_) => di.sl<ReviewBloc>()),
           BlocProvider(create: (_) => di.sl<ShopBloc>()),
         ],
         child: Builder(

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/widgets.dart';
+import '../bloc/profile_bloc.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -44,8 +46,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     subtitle: 'Recevoir des mises à jour',
                     trailing: Switch(
                       value: _notificationsEnabled,
-                      onChanged: (val) =>
-                          setState(() => _notificationsEnabled = val),
+                      onChanged: (val) {
+                        setState(() => _notificationsEnabled = val);
+                        context.read<ProfileBloc>().add(
+                              ProfilePreferencesUpdateRequested(
+                                  {'notifications_enabled': val}));
+                      },
                       activeThumbColor: AppColors.accent,
                       activeTrackColor: AppColors.accent.withValues(alpha: 0.3),
                       inactiveThumbColor: AppColors.textSecondary,

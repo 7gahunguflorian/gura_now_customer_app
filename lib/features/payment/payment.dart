@@ -4,8 +4,12 @@
 export 'domain/entities/payment_proof.dart';
 export 'domain/entities/shop_balance.dart';
 export 'domain/repositories/payment_repository.dart';
+export 'domain/usecases/get_payment_history_usecase.dart';
+export 'domain/usecases/get_payment_proof_usecase.dart';
 export 'domain/usecases/get_payment_proofs_usecase.dart';
 export 'domain/usecases/get_shop_balance_usecase.dart';
+export 'domain/usecases/submit_payment_proof_usecase.dart';
+export 'domain/usecases/validate_payment_proof_usecase.dart';
 
 // Data
 export 'data/models/payment_history_model.dart';

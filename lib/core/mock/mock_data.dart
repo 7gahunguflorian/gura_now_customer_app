@@ -5,7 +5,10 @@ library;
 import 'dart:math';
 
 import '../../features/auth/data/models/user_model.dart';
+import '../../features/profile/domain/entities/address.dart';
+import '../../features/review/data/models/review_model.dart';
 import '../../features/shop/data/models/shop_model.dart';
+import '../../features/shop/domain/entities/product.dart';
 import '../../features/orders/data/models/order_model.dart';
 import '../../features/orders/data/models/order_item_model.dart';
 import '../../features/orders/domain/entities/order.dart';
@@ -415,6 +418,194 @@ class MockData {
       return null;
     }
   }
+
+  // ============================================
+  // PRODUCT MOCK DATA
+  // ============================================
+
+  static final List<Product> products = [
+    const Product(
+      id: 'prod-1',
+      name: 'Tomates fraîches',
+      description: 'Tomates locales fraîches cueillies ce matin.',
+      price: 1500,
+      shopId: 'shop-1',
+      shopName: 'Marché Central',
+      imageUrl: 'https://picsum.photos/seed/prod1/400/400',
+      rating: 4.5,
+      reviewCount: 12,
+      stock: 50,
+    ),
+    const Product(
+      id: 'prod-2',
+      name: 'Pommes de terre',
+      description: 'Pommes de terre de qualité supérieure.',
+      price: 2000,
+      shopId: 'shop-1',
+      shopName: 'Marché Central',
+      imageUrl: 'https://picsum.photos/seed/prod2/400/400',
+      rating: 4.2,
+      reviewCount: 8,
+      stock: 30,
+    ),
+    const Product(
+      id: 'prod-3',
+      name: 'Avocats',
+      description: 'Avocats mûrs importés.',
+      price: 3000,
+      shopId: 'shop-1',
+      shopName: 'Marché Central',
+      imageUrl: 'https://picsum.photos/seed/prod3/400/400',
+      rating: 4.8,
+      reviewCount: 20,
+      stock: 15,
+    ),
+    const Product(
+      id: 'prod-4',
+      name: 'Épices mélangées',
+      description: 'Mélange traditionnel d\'épices africaines.',
+      price: 5000,
+      shopId: 'shop-2',
+      shopName: 'Kimironko Market',
+      imageUrl: 'https://picsum.photos/seed/prod4/400/400',
+      rating: 4.6,
+      reviewCount: 35,
+      stock: 100,
+    ),
+    const Product(
+      id: 'prod-5',
+      name: 'Haricots rouges',
+      description: 'Haricots rouges secs en vrac.',
+      price: 2500,
+      shopId: 'shop-2',
+      shopName: 'Kimironko Market',
+      imageUrl: 'https://picsum.photos/seed/prod5/400/400',
+      rating: 4.3,
+      reviewCount: 18,
+      stock: 200,
+    ),
+    const Product(
+      id: 'prod-6',
+      name: 'Bananes plantain',
+      description: 'Bananes plantains vertes et mûres.',
+      price: 1800,
+      shopId: 'shop-3',
+      shopName: 'Nyabugogo Market',
+      imageUrl: 'https://picsum.photos/seed/prod6/400/400',
+      rating: 4.0,
+      reviewCount: 9,
+      stock: 80,
+    ),
+    const Product(
+      id: 'prod-7',
+      name: 'Carottes bio',
+      description: 'Carottes biologiques cultivées localement.',
+      price: 2200,
+      shopId: 'shop-4',
+      shopName: 'Green Grocer',
+      imageUrl: 'https://picsum.photos/seed/prod7/400/400',
+      rating: 4.9,
+      reviewCount: 42,
+      stock: 60,
+    ),
+    const Product(
+      id: 'prod-8',
+      name: 'Salade verte',
+      description: 'Laitue fraîche récoltée quotidiennement.',
+      price: 1200,
+      shopId: 'shop-4',
+      shopName: 'Green Grocer',
+      imageUrl: 'https://picsum.photos/seed/prod8/400/400',
+      rating: 4.7,
+      reviewCount: 28,
+      stock: 40,
+    ),
+  ];
+
+  static List<Product> getProductsByShopId(String shopId) =>
+      products.where((p) => p.shopId == shopId).toList();
+
+  static Product? getProductById(String id) {
+    try {
+      return products.firstWhere((p) => p.id == id);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // ============================================
+  // REVIEW MOCK DATA
+  // ============================================
+
+  static final List<ReviewModel> reviews = [
+    ReviewModel(
+      id: 'rev-1',
+      userId: 'user-1',
+      userName: 'Jean Baptiste',
+      rating: 5,
+      comment: 'Excellent service, livraison rapide!',
+      shopId: 'shop-1',
+      createdAt: DateTime.now().subtract(const Duration(days: 5)),
+    ),
+    ReviewModel(
+      id: 'rev-2',
+      userId: 'user-2',
+      userName: 'Marie Claire',
+      rating: 4,
+      comment: 'Bonne qualité des produits.',
+      shopId: 'shop-1',
+      createdAt: DateTime.now().subtract(const Duration(days: 10)),
+    ),
+    ReviewModel(
+      id: 'rev-3',
+      userId: 'user-1',
+      userName: 'Jean Baptiste',
+      rating: 4,
+      comment: 'Très bonne boutique.',
+      shopId: 'shop-2',
+      createdAt: DateTime.now().subtract(const Duration(days: 3)),
+    ),
+    ReviewModel(
+      id: 'rev-4',
+      userId: 'user-3',
+      userName: 'Eric Mugisha',
+      rating: 3,
+      comment: 'Correct mais peut mieux faire.',
+      productId: 'prod-1',
+      createdAt: DateTime.now().subtract(const Duration(days: 7)),
+    ),
+  ];
+
+  static List<ReviewModel> getShopReviews(String shopId) =>
+      reviews.where((r) => r.shopId == shopId).toList();
+
+  static List<ReviewModel> getProductReviews(String productId) =>
+      reviews.where((r) => r.productId == productId).toList();
+
+  // ============================================
+  // ADDRESS MOCK DATA
+  // ============================================
+
+  static List<Address> addresses = [
+    const Address(
+      id: 'addr-1',
+      label: 'Maison',
+      fullAddress: 'Avenue de l\'Indépendance, Quartier Buyenzi',
+      city: 'Bujumbura',
+      phone: '+257 79 123 456',
+      isDefault: true,
+    ),
+    const Address(
+      id: 'addr-2',
+      label: 'Bureau',
+      fullAddress: 'Rue du Commerce, Centre-ville',
+      city: 'Bujumbura',
+      phone: '+257 79 234 567',
+      isDefault: false,
+    ),
+  ];
+
+  static List<Address> getAddressesForUser(String userId) => addresses;
 
   // ============================================
   // DELIVERY MOCK DATA

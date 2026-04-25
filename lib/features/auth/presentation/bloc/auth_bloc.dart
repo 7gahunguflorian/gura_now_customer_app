@@ -1,7 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../core/mock/mock_data.dart';
 import '../../../../core/storage/secure_storage.dart';
 import '../../../../core/usecases/usecase.dart';
 import '../../domain/entities/user.dart';
@@ -92,22 +91,20 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     emit(state.copyWith(status: AuthStatus.loading, clearError: true));
-    final user = MockData.getUserById('user-1');
-    if (user == null) {
-      emit(state.copyWith(
-        status: AuthStatus.error,
-        errorMessage: 'Mock user not found',
-      ));
-      return;
-    }
-    final token = MockData.generateMockToken();
-    MockData.login(user.id, user.role, token);
-    await _storage.saveToken(token);
-    await _storage.saveUser(user);
-    emit(state.copyWith(
-      status: AuthStatus.authenticated,
-      user: user.toEntity(),
+    final result = await _loginUseCase(const LoginParams(
+      phoneNumber: '+250788123456',
+      password: 'demo',
     ));
+    result.fold(
+      (failure) => emit(state.copyWith(
+        status: AuthStatus.error,
+        errorMessage: failure.message,
+      )),
+      (user) => emit(state.copyWith(
+        status: AuthStatus.authenticated,
+        user: user,
+      )),
+    );
   }
 
   Future<void> _onRegisterRequested(

@@ -1,11 +1,8 @@
 /// Notification remote data source for Gura Now application.
 library;
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/api_endpoints.dart';
-import '../../../../core/mock/mock_config.dart';
-import '../../../../core/mock/mock_notification_datasource.dart';
 import '../../../../core/network/api_client.dart';
 import '../models/notification_model.dart';
 
@@ -127,16 +124,3 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
     await _apiClient.delete('/notifications/fcm-token/$tokenId');
   }
 }
-
-/// Provider for notification remote data source.
-final notificationRemoteDataSourceProvider =
-    Provider<NotificationRemoteDataSource>((ref) {
-  // Use mock or real data source based on configuration
-  if (useMockData) {
-    logMockOperation('Using MockNotificationRemoteDataSource');
-    return MockNotificationRemoteDataSource();
-  } else {
-    final apiClient = ref.watch(apiClientProvider);
-    return NotificationRemoteDataSourceImpl(apiClient);
-  }
-});

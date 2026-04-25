@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../bloc/review_bloc.dart';
 import 'star_rating_widget.dart';
 
 /// Modal dialog for submitting a review (dark theme).
@@ -50,22 +52,24 @@ class _ReviewFormModalState extends State<ReviewFormModal> {
       return;
     }
     setState(() => _isSubmitting = true);
-    try {
-      await widget.onSubmit?.call(_rating, _commentController.text.trim().isEmpty ? null : _commentController.text.trim());
-      if (mounted) Navigator.pop(context, true);
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Erreur: $e'),
-            backgroundColor: AppColors.danger,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          ),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _isSubmitting = false);
+    final comment = _commentController.text.trim().isEmpty
+        ? null
+        : _commentController.text.trim();
+    final targetId = widget.shopId ?? widget.driverId ?? '';
+    final targetType = widget.reviewType;
+    if (targetId.isNotEmpty) {
+      context.read<ReviewBloc>().add(ReviewSubmitRequested(
+            targetId: targetId,
+            targetType: targetType,
+            rating: _rating,
+            comment: comment,
+            orderId: widget.orderId,
+          ));
+    }
+    await widget.onSubmit?.call(_rating, comment);
+    if (mounted) {
+      setState(() => _isSubmitting = false);
+      Navigator.pop(context, true);
     }
   }
 

@@ -4,7 +4,6 @@ library;
 
 import 'dart:convert';
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 // Keys
@@ -72,7 +71,3 @@ class SecureStorageService {
     await _storage.delete(key: _keyUser);
   }
 }
-
-/// Provider for SecureStorage
-final secureStorageProvider =
-    Provider<SecureStorageService>((ref) => SecureStorageService());

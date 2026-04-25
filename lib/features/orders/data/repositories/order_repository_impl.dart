@@ -1,11 +1,7 @@
 import 'package:dartz/dartz.dart' hide Order;
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/errors/exceptions.dart';
 import '../../../../core/errors/failures.dart';
-import '../../../../core/network/api_client.dart';
-import '../../../../core/mock/mock_config.dart';
-import '../../../../core/mock/mock_order_datasource.dart';
 import '../../domain/entities/order.dart';
 import '../../domain/repositories/order_repository.dart';
 import '../datasources/order_remote_datasource.dart';
@@ -78,15 +74,3 @@ class OrderRepositoryImpl implements OrderRepository {
     }
   }
 }
-
-final orderRepositoryProvider = Provider<OrderRepository>((ref) {
-  final OrderRemoteDataSource dataSource;
-  if (useMockData) {
-    logMockOperation('Using MockOrderRemoteDataSource');
-    dataSource = MockOrderRemoteDataSource();
-  } else {
-    final apiClient = ref.watch(apiClientProvider);
-    dataSource = OrderRemoteDataSourceImpl(apiClient);
-  }
-  return OrderRepositoryImpl(dataSource);
-});

@@ -1,11 +1,8 @@
 import 'package:dartz/dartz.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/errors/exceptions.dart';
 import '../../../../core/errors/failures.dart';
-import '../../../../core/mock/mock_config.dart';
-import '../../../../core/mock/mock_shop_datasource.dart';
-import '../../../../core/network/api_client.dart';
+import '../../domain/entities/product.dart';
 import '../../domain/entities/shop.dart';
 import '../../domain/repositories/shop_repository.dart';
 import '../datasources/shop_remote_datasource.dart';
@@ -47,16 +44,16 @@ class ShopRepositoryImpl implements ShopRepository {
       return Left(UnknownFailure(e.toString()));
     }
   }
-}
 
-final shopRepositoryProvider = Provider<ShopRepository>((ref) {
-  final ShopRemoteDataSource remoteDataSource;
-  if (useMockData) {
-    logMockOperation('Using MockShopRemoteDataSource');
-    remoteDataSource = MockShopRemoteDataSource();
-  } else {
-    final apiClient = ref.watch(apiClientProvider);
-    remoteDataSource = ShopRemoteDataSourceImpl(apiClient);
+  @override
+  Future<Either<Failure, List<Product>>> getShopProducts(String shopId) async {
+    try {
+      final products = await _remoteDataSource.getShopProducts(shopId);
+      return Right(products);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } catch (e) {
+      return Left(UnknownFailure(e.toString()));
+    }
   }
-  return ShopRepositoryImpl(remoteDataSource);
-});
+}

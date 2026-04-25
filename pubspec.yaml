@@ -1,4 +1,4 @@
-name: gura_now
+name: gura_now_customer_app
 description: "Gura Now - Marketplace mobile pour le Burundi avec livraison intégrée"
 publish_to: "none"
 
@@ -21,7 +21,6 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   flutter_map: ^6.1.0
-  flutter_riverpod: ^2.4.0
   flutter_secure_storage: ^9.0.0
   fluttertoast: ^9.0.0
   geolocator: ^10.1.0
@@ -33,7 +32,6 @@ dependencies:
   latlong2: ^0.9.0
   logger: ^2.1.0
   pin_code_fields: ^8.0.1
-  riverpod: ^2.4.0
   shared_preferences: ^2.2.0
   smooth_page_indicator: ^1.1.0
   timeago: ^3.5.0
@@ -41,11 +39,6 @@ dependencies:
   web_socket_channel: ^2.4.0
 
 dev_dependencies:
-  # ============================================================================
-  # CODE GENERATION
-  # ============================================================================
-  build_runner: ^2.4.0
-
   # ============================================================================
   # LINTING & ANALYSIS
   # ============================================================================
@@ -58,7 +51,6 @@ dev_dependencies:
   # ============================================================================
   mockito: ^5.4.0
   mocktail: ^1.0.0
-  riverpod_generator: ^2.3.0
 
 flutter:
   uses-material-design: true

@@ -19,9 +19,13 @@ import '../../features/orders/presentation/pages/order_detail_screen.dart';
 import '../../features/orders/presentation/pages/order_success_screen.dart';
 import '../../features/orders/presentation/pages/orders_list_screen.dart';
 import '../../features/notifications/presentation/pages/notifications_screen.dart';
+import '../../features/payment/presentation/pages/payment_history_screen.dart';
+import '../../features/payment/presentation/pages/payment_proof_upload_screen.dart';
+import '../../features/payment/presentation/pages/payment_validation_screen.dart';
 import '../../features/placeholders.dart'; // DriverDeliveriesScreen, OwnerDashboardScreen
-import '../../features/profile/profile.dart';
 import '../../features/product/presentation/pages/product_detail_screen.dart';
+import '../../features/profile/profile.dart';
+import '../../features/review/presentation/pages/reviews_list_screen.dart';
 import '../../features/shop/domain/entities/shop.dart';
 import '../../features/shop/presentation/pages/shop_detail_screen.dart';
 import '../layouts/main_scaffold.dart';
@@ -186,6 +190,53 @@ GoRouter createAppRouterWithBloc(BuildContext context) {
       GoRoute(
         path: '/notifications',
         builder: (context, state) => const NotificationsScreen(),
+      ),
+      GoRoute(
+        path: '/change-password',
+        builder: (context, state) => const ChangePasswordScreen(),
+      ),
+      GoRoute(
+        path: '/payment/history',
+        builder: (context, state) => const PaymentHistoryScreen(),
+      ),
+      GoRoute(
+        path: '/payment/validation',
+        builder: (context, state) => const PaymentValidationScreen(),
+      ),
+      GoRoute(
+        path: '/payment/proof-upload/:orderId',
+        builder: (context, state) {
+          final orderId = state.pathParameters['orderId']!;
+          final extra = state.extra as Map<String, dynamic>?;
+          return PaymentProofUploadScreen(
+            orderId: orderId,
+            totalAmount: (extra?['totalAmount'] as num?)?.toDouble() ?? 0.0,
+          );
+        },
+      ),
+      GoRoute(
+        path: '/reviews/shop/:shopId',
+        builder: (context, state) {
+          final shopId = state.pathParameters['shopId']!;
+          final extra = state.extra as Map<String, dynamic>?;
+          return ReviewsListScreen(
+            targetId: shopId,
+            targetType: 'shop',
+            targetName: extra?['targetName'] as String? ?? 'Boutique',
+          );
+        },
+      ),
+      GoRoute(
+        path: '/reviews/product/:productId',
+        builder: (context, state) {
+          final productId = state.pathParameters['productId']!;
+          final extra = state.extra as Map<String, dynamic>?;
+          return ReviewsListScreen(
+            targetId: productId,
+            targetType: 'product',
+            targetName: extra?['targetName'] as String? ?? 'Produit',
+          );
+        },
       ),
     ],
   );

@@ -1,10 +1,7 @@
 import 'package:dartz/dartz.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/errors/exceptions.dart';
 import '../../../../core/errors/failures.dart';
-import '../../../../core/mock/mock_auth_datasource.dart';
-import '../../../../core/mock/mock_config.dart';
 import '../../../../core/storage/secure_storage.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
@@ -95,10 +92,3 @@ class AuthRepositoryImpl implements AuthRepository {
     }
   }
 }
-
-/// Provider for AuthRepository (mock only - API not used in this app).
-final authRepositoryProvider = Provider<AuthRepository>((ref) {
-  final secureStorage = ref.watch(secureStorageProvider);
-  logMockOperation('Using MockAuthRemoteDataSource');
-  return AuthRepositoryImpl(MockAuthRemoteDataSource(), secureStorage);
-});

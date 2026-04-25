@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../constants/app_config.dart';
@@ -235,21 +234,3 @@ class WebSocketService {
   }
 }
 
-/// WebSocket service provider.
-final webSocketServiceProvider = Provider<WebSocketService>((ref) {
-  final service = WebSocketService();
-  ref.onDispose(service.dispose);
-  return service;
-});
-
-/// WebSocket status provider.
-final webSocketStatusProvider = StreamProvider<WebSocketStatus>((ref) {
-  final service = ref.watch(webSocketServiceProvider);
-  return service.statusStream;
-});
-
-/// WebSocket messages provider.
-final webSocketMessagesProvider = StreamProvider<WSMessage>((ref) {
-  final service = ref.watch(webSocketServiceProvider);
-  return service.messageStream;
-});

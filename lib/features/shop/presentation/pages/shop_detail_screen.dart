@@ -6,23 +6,8 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/product_card.dart';
 import '../../../cart/presentation/bloc/cart_bloc.dart';
-import '../../domain/entities/product.dart';
 import '../../domain/entities/shop.dart';
 import '../bloc/shop_bloc.dart';
-
-List<Product> _mockProducts(String shopId, String shopName) {
-  return List.generate(
-    10,
-    (index) => Product(
-      id: '${shopId}_prod_$index',
-      name: 'Produit ${index + 1}',
-      description: 'Description du produit.',
-      price: (index + 1) * 2500.0,
-      shopId: shopId,
-      shopName: shopName,
-    ),
-  );
-}
 
 class ShopDetailScreen extends StatefulWidget {
   const ShopDetailScreen({
@@ -39,21 +24,14 @@ class ShopDetailScreen extends StatefulWidget {
 }
 
 class _ShopDetailScreenState extends State<ShopDetailScreen> {
-  List<Product>? _products;
-
   @override
   void initState() {
     super.initState();
+    final bloc = context.read<ShopBloc>();
     if (widget.shopExtra == null) {
-      context.read<ShopBloc>().add(ShopDetailRequested(widget.shopId));
+      bloc.add(ShopDetailRequested(widget.shopId));
     }
-    Future.delayed(const Duration(milliseconds: 400), () {
-      if (mounted) {
-        final shop = widget.shopExtra;
-        final name = shop?.name ?? 'Boutique';
-        setState(() => _products = _mockProducts(widget.shopId, name));
-      }
-    });
+    bloc.add(ShopProductsRequested(widget.shopId));
   }
 
   @override
@@ -61,7 +39,9 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
     return BlocBuilder<ShopBloc, ShopState>(
       buildWhen: (prev, next) =>
           prev.detailStatus != next.detailStatus ||
-          prev.selectedShop != next.selectedShop,
+          prev.selectedShop != next.selectedShop ||
+          prev.productsStatus != next.productsStatus ||
+          prev.shopProducts != next.shopProducts,
       builder: (context, state) {
         final shop = widget.shopExtra ??
             (state.detailStatus == ShopDetailStatus.success
@@ -94,7 +74,7 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
             ),
           );
         }
-        final products = _products ?? [];
+        final products = state.shopProducts;
         return BlocBuilder<CartBloc, CartState>(
           builder: (context, cartState) {
             final cartCount = cartState.itemCount;
@@ -243,10 +223,20 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
                     ),
                   ),
                   const SliverToBoxAdapter(child: SizedBox(height: 12)),
-                  if (products.isEmpty)
+                  if (state.productsStatus == ShopProductsStatus.loading)
                     const SliverFillRemaining(
                       child: Center(
                         child: CircularProgressIndicator(color: AppColors.primary),
+                      ),
+                    )
+                  else if (products.isEmpty)
+                    SliverFillRemaining(
+                      child: Center(
+                        child: Text(
+                          'Aucun produit disponible.',
+                          style: AppTextStyles.bodyMedium.copyWith(
+                              color: AppColors.textSecondary),
+                        ),
                       ),
                     )
                   else

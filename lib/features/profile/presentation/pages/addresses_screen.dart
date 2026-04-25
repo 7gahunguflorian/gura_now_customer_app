@@ -1,29 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
-
-/// Address entity.
-class Address {
-  const Address({
-    required this.id,
-    required this.label,
-    required this.fullAddress,
-    this.city,
-    this.phone,
-    this.latitude,
-    this.longitude,
-    this.isDefault = false,
-  });
-  final String id;
-  final String label;
-  final String fullAddress;
-  final String? city;
-  final String? phone;
-  final double? latitude;
-  final double? longitude;
-  final bool isDefault;
-}
+import '../../domain/entities/address.dart';
+import '../bloc/profile_bloc.dart';
 
 /// Screen for managing delivery addresses.
 class AddressesScreen extends StatefulWidget {
@@ -34,27 +15,20 @@ class AddressesScreen extends StatefulWidget {
 }
 
 class _AddressesScreenState extends State<AddressesScreen> {
-  // Mock addresses - replace with actual provider
-  final List<Address> _addresses = [
-    const Address(
-      id: '1',
-      label: 'Maison',
-      fullAddress: 'Avenue de l\'Indépendance, Quartier Buyenzi',
-      city: 'Bujumbura',
-      phone: '+257 79 123 456',
-      isDefault: true,
-    ),
-    const Address(
-      id: '2',
-      label: 'Bureau',
-      fullAddress: 'Rue du Commerce, Centre-ville',
-      city: 'Bujumbura',
-      phone: '+257 79 789 012',
-    ),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    context.read<ProfileBloc>().add(const ProfileAddressesLoadRequested());
+  }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
+  Widget build(BuildContext context) {
+    return BlocBuilder<ProfileBloc, ProfileState>(
+      buildWhen: (p, n) =>
+          p.addresses != n.addresses || p.addressStatus != n.addressStatus,
+      builder: (context, state) {
+        final addresses = state.addresses;
+        return Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
           title: const Text('Mes adresses'),
@@ -66,7 +40,10 @@ class _AddressesScreenState extends State<AddressesScreen> {
             onPressed: () => context.pop(),
           ),
         ),
-        body: _addresses.isEmpty
+        body: state.addressStatus == ProfileStatus.loading
+            ? const Center(
+                child: CircularProgressIndicator(color: AppColors.primary))
+            : addresses.isEmpty
             ? Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -106,9 +83,9 @@ class _AddressesScreenState extends State<AddressesScreen> {
               )
             : ListView.builder(
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
-                itemCount: _addresses.length,
+                itemCount: addresses.length,
                 itemBuilder: (context, index) {
-                  final address = _addresses[index];
+                  final address = addresses[index];
                   return _AddressCard(
                     address: address,
                     onEdit: () => _showAddressForm(address: address),
@@ -117,14 +94,17 @@ class _AddressesScreenState extends State<AddressesScreen> {
                   );
                 },
               ),
-        floatingActionButton: _addresses.isNotEmpty
+        floatingActionButton: addresses.isNotEmpty
             ? FloatingActionButton(
                 onPressed: () => _showAddressForm(),
                 backgroundColor: AppColors.primary,
                 child: const Icon(Icons.add_rounded),
               )
             : null,
-      );
+        );
+      },
+    );
+  }
 
   void _showAddressForm({Address? address}) {
     showModalBottomSheet(
@@ -133,20 +113,11 @@ class _AddressesScreenState extends State<AddressesScreen> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) => _AddressFormSheet(
+      builder: (ctx) => _AddressFormSheet(
         address: address,
         onSave: (newAddress) {
-          setState(() {
-            if (address != null) {
-              final index = _addresses.indexWhere((a) => a.id == address.id);
-              if (index != -1) {
-                _addresses[index] = newAddress;
-              }
-            } else {
-              _addresses.add(newAddress);
-            }
-          });
-          Navigator.pop(context);
+          context.read<ProfileBloc>().add(ProfileAddressAddRequested(newAddress));
+          Navigator.pop(ctx);
         },
       ),
     );
@@ -155,7 +126,7 @@ class _AddressesScreenState extends State<AddressesScreen> {
   void _deleteAddress(Address address) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.surface,
         title: Text(
           'Supprimer l\'adresse',
@@ -167,13 +138,13 @@ class _AddressesScreenState extends State<AddressesScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(ctx),
             child: Text('Annuler', style: TextStyle(color: AppColors.textSecondary)),
           ),
           TextButton(
             onPressed: () {
-              setState(() => _addresses.removeWhere((a) => a.id == address.id));
-              Navigator.pop(context);
+              context.read<ProfileBloc>().add(ProfileAddressRemoveRequested(address.id));
+              Navigator.pop(ctx);
             },
             child: Text('Supprimer', style: TextStyle(color: AppColors.danger, fontWeight: FontWeight.w600)),
           ),
@@ -183,21 +154,7 @@ class _AddressesScreenState extends State<AddressesScreen> {
   }
 
   void _setDefaultAddress(Address address) {
-    setState(() {
-      for (var i = 0; i < _addresses.length; i++) {
-        final a = _addresses[i];
-        _addresses[i] = Address(
-          id: a.id,
-          label: a.label,
-          fullAddress: a.fullAddress,
-          city: a.city,
-          phone: a.phone,
-          latitude: a.latitude,
-          longitude: a.longitude,
-          isDefault: a.id == address.id,
-        );
-      }
-    });
+    context.read<ProfileBloc>().add(ProfileAddressDefaultRequested(address.id));
   }
 }
 

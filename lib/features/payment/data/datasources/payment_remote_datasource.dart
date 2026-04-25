@@ -4,11 +4,8 @@ library;
 import 'dart:io';
 
 import 'package:dio/dio.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/api_endpoints.dart';
-import '../../../../core/mock/mock_config.dart';
-import '../../../../core/mock/mock_payment_datasource.dart';
 import '../../../../core/network/api_client.dart';
 import '../models/payment_history_model.dart';
 import '../models/payment_proof_model.dart';
@@ -156,16 +153,3 @@ class PaymentRemoteDataSourceImpl implements PaymentRemoteDataSource {
     return ShopBalanceModel.fromJson(response);
   }
 }
-
-/// Provider for payment remote data source.
-final paymentRemoteDataSourceProvider =
-    Provider<PaymentRemoteDataSource>((ref) {
-  // Use mock or real data source based on configuration
-  if (useMockData) {
-    logMockOperation('Using MockPaymentRemoteDataSource');
-    return MockPaymentRemoteDataSource();
-  } else {
-    final apiClient = ref.watch(apiClientProvider);
-    return PaymentRemoteDataSourceImpl(apiClient);
-  }
-});

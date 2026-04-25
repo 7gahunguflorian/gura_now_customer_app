@@ -1,18 +1,27 @@
-import 'dart:convert';
-
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../../core/usecases/usecase.dart';
 import '../../../shop/domain/entities/product.dart';
 import '../../data/models/cart_item.dart';
-import '../../data/models/cart_state.dart';
+import '../../domain/usecases/cart_usecases.dart';
 
 part 'cart_event.dart';
 part 'cart_state.dart';
 
 class CartBloc extends Bloc<CartEvent, CartState> {
-  CartBloc(this._prefs) : super(const CartState()) {
+  CartBloc({
+    required GetCartUseCase getCartUseCase,
+    required AddToCartUseCase addToCartUseCase,
+    required RemoveFromCartUseCase removeFromCartUseCase,
+    required UpdateCartQuantityUseCase updateCartQuantityUseCase,
+    required ClearCartUseCase clearCartUseCase,
+  })  : _getCart = getCartUseCase,
+        _addToCart = addToCartUseCase,
+        _removeFromCart = removeFromCartUseCase,
+        _updateQuantity = updateCartQuantityUseCase,
+        _clearCart = clearCartUseCase,
+        super(const CartState()) {
     on<CartLoadRequested>(_onLoadRequested);
     on<CartItemAdded>(_onItemAdded);
     on<CartItemRemoved>(_onItemRemoved);
@@ -21,74 +30,84 @@ class CartBloc extends Bloc<CartEvent, CartState> {
     add(const CartLoadRequested());
   }
 
-  final SharedPreferences _prefs;
-  static const String _storageKey = 'cart_state';
+  final GetCartUseCase _getCart;
+  final AddToCartUseCase _addToCart;
+  final RemoveFromCartUseCase _removeFromCart;
+  final UpdateCartQuantityUseCase _updateQuantity;
+  final ClearCartUseCase _clearCart;
 
-  Future<void> _onLoadRequested(CartLoadRequested event, Emitter<CartState> emit) async {
+  Future<void> _onLoadRequested(
+      CartLoadRequested event, Emitter<CartState> emit) async {
     emit(state.copyWith(status: CartStatus.loading, error: null));
-    try {
-      final jsonString = _prefs.getString(_storageKey);
-      if (jsonString != null) {
-        final json = jsonDecode(jsonString) as Map<String, dynamic>;
-        final cartModel = CartStateModel.fromJson(json);
-        emit(state.copyWith(status: CartStatus.success, items: cartModel.items.cast<CartItemModel>()));
-      } else {
-        emit(state.copyWith(status: CartStatus.success, items: const []));
-      }
-    } catch (e) {
-      emit(state.copyWith(status: CartStatus.failure, error: e.toString(), items: const []));
-    }
+    final result = await _getCart(NoParams());
+    result.fold(
+      (f) => emit(state.copyWith(
+          status: CartStatus.failure, error: f.message, items: const [])),
+      (items) => emit(
+          state.copyWith(status: CartStatus.success, items: items)),
+    );
   }
 
-  Future<void> _onItemAdded(CartItemAdded event, Emitter<CartState> emit) async {
-    final items = List<CartItemModel>.from(state.items);
-    final index = items.indexWhere((item) => item.product.id == event.product.id);
-
-    if (index >= 0) {
-      final existing = items[index];
-      items[index] = CartItemModel(product: existing.product, quantity: existing.quantity + event.quantity);
-    } else {
-      items.add(CartItemModel(product: event.product, quantity: event.quantity));
-    }
-
-    await _saveCart(items);
-    emit(state.copyWith(items: items));
+  Future<void> _onItemAdded(
+      CartItemAdded event, Emitter<CartState> emit) async {
+    final result = await _addToCart(AddToCartParams(event.product, event.quantity));
+    result.fold(
+      (f) => emit(state.copyWith(status: CartStatus.failure, error: f.message)),
+      (_) {
+        final items = List<CartItemModel>.from(state.items);
+        final idx = items.indexWhere((i) => i.product.id == event.product.id);
+        if (idx >= 0) {
+          items[idx] = CartItemModel(
+              product: items[idx].product,
+              quantity: items[idx].quantity + event.quantity);
+        } else {
+          items.add(CartItemModel(product: event.product, quantity: event.quantity));
+        }
+        emit(state.copyWith(items: items));
+      },
+    );
   }
 
-  Future<void> _onItemRemoved(CartItemRemoved event, Emitter<CartState> emit) async {
-    final items = state.items.where((item) => item.product.id != event.productId).toList();
-    await _saveCart(items);
-    emit(state.copyWith(items: items));
+  Future<void> _onItemRemoved(
+      CartItemRemoved event, Emitter<CartState> emit) async {
+    final result = await _removeFromCart(event.productId);
+    result.fold(
+      (f) => emit(state.copyWith(status: CartStatus.failure, error: f.message)),
+      (_) {
+        final items =
+            state.items.where((i) => i.product.id != event.productId).toList();
+        emit(state.copyWith(items: items));
+      },
+    );
   }
 
-  Future<void> _onQuantityUpdated(CartQuantityUpdated event, Emitter<CartState> emit) async {
+  Future<void> _onQuantityUpdated(
+      CartQuantityUpdated event, Emitter<CartState> emit) async {
     if (event.quantity <= 0) {
       add(CartItemRemoved(event.productId));
       return;
     }
-
-    final items = List<CartItemModel>.from(state.items);
-    final index = items.indexWhere((item) => item.product.id == event.productId);
-
-    if (index >= 0) {
-      items[index] = CartItemModel(product: items[index].product, quantity: event.quantity);
-      await _saveCart(items);
-      emit(state.copyWith(items: items));
-    }
+    final result =
+        await _updateQuantity(UpdateCartQuantityParams(event.productId, event.quantity));
+    result.fold(
+      (f) => emit(state.copyWith(status: CartStatus.failure, error: f.message)),
+      (_) {
+        final items = List<CartItemModel>.from(state.items);
+        final idx = items.indexWhere((i) => i.product.id == event.productId);
+        if (idx >= 0) {
+          items[idx] = CartItemModel(
+              product: items[idx].product, quantity: event.quantity);
+          emit(state.copyWith(items: items));
+        }
+      },
+    );
   }
 
   Future<void> _onCleared(CartCleared event, Emitter<CartState> emit) async {
-    await _saveCart(const []);
-    emit(state.copyWith(items: const []));
-  }
-
-  Future<void> _saveCart(List<CartItemModel> items) async {
-    try {
-      final cartModel = CartStateModel(items: items);
-      final jsonString = jsonEncode(cartModel.toJson());
-      await _prefs.setString(_storageKey, jsonString);
-    } catch (_) {
-      // Ignore error
-    }
+    final result = await _clearCart(NoParams());
+    result.fold(
+      (f) => emit(state.copyWith(status: CartStatus.failure, error: f.message)),
+      (_) => emit(state.copyWith(items: const [])),
+    );
   }
 }
